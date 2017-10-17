@@ -20,11 +20,10 @@ fs.readFile('../build/contracts/OracleI.json', (error, json) => {
     var result = event.args;
     var baseUrl = 'http://gist.githubusercontent.com/gnumarcelo/07e9e56e28b304e108eef83f70fc03b5/raw/';
     http.get(`${baseUrl}001234b5ff58cd752ec874a7434446bae0d9228d/nfe1.json`, function(res){
-      console.log(res)
+      // console.log(res)
     })
     // https://gist.github.com/gnumarcelo/07e9e56e28b304e108eef83f70fc03b5
-
-    // console.log(`Sending message from ${result.from}: event[${result._eventName}], body[${result.body}]`);  
+    console.log(`Sending message from ${result.from}: event[${result._eventName}], body[${result.body}]`);  
   });
 });
 

@@ -66,10 +66,11 @@ window.App = {
   createContract: function() {
     var self = this;
 
-    var nfeKey = parseInt(document.getElementById("nfeKey").value);
+    var nfeKey = document.getElementById("nfeKey").value;
 
     self.setStatus("Criando contrato... (aguarde)");
     
+    console.log(nfeKey, deployedOracle.address)
     DPClaim.new(nfeKey, deployedOracle.address, {from: account, gas: 3000000}).then(function(instance) {
       self.setStatus(`Contrato criado com sucesso no endereço ${instance.address}`);
       
