@@ -1,45 +1,60 @@
-// Import the page's CSS. Webpack will know what to do with it.
+// Import CSS. <-- Webpack cuida da geração de assets
 import "../stylesheets/app.css";
 
-// Import libraries we need.
+// Import de bibliotecas
 import { default as Web3} from 'web3';
-import { default as contract } from 'truffle-contract'
+import { default as contract } from 'truffle-contract';
 
-// Import our contract artifacts and turn them into usable abstractions.
-import metacoin_artifacts from '../../build/contracts/MetaCoin.json'
+// Import dos contratos
+import dpclaim_artifacts from '../../build/contracts/DPClaim.json';
+import oracle_artifacts from '../../build/contracts/OracleI.json';
 
-// MetaCoin is our usable abstraction, which we'll use through the code below.
-var MetaCoin = contract(metacoin_artifacts);
+var DPClaim = contract(dpclaim_artifacts);
+var OracleI = contract(oracle_artifacts);
 
-// The following code is simple to show off interacting with your contracts.
-// As your needs grow you will likely need to change its form and structure.
-// For application bootstrapping, check out window.addEventListener below.
+// Código para interagir com o contrato
 var accounts;
 var account;
+var deployedOracle;
 
 window.App = {
   start: function() {
     var self = this;
 
-    // Bootstrap the MetaCoin abstraction for Use.
-    MetaCoin.setProvider(web3.currentProvider);
+    // Inicializa contrato
+    DPClaim.setProvider(web3.currentProvider);
+    OracleI.setProvider(web3.currentProvider);
+    
+    // Inicia endereco do Oracle
+    OracleI.deployed().then(function(instance) {
+      deployedOracle = instance;
+      console.log('Oracle iniciado em: ' + deployedOracle.address)
+      return instance;
+    }).then(function(instance) {
+      // instance.EventDispatched().watch ( (err, response) => {  //set up listener for the AuctionClosed Event
+      //   console.log(err);
+      //   //once the event has been detected, take actions as desired
+      //   console.log('Evento foi executado ' + JSON.stringify(response));
+      // });  
+    });
 
-    // Get the initial account balance so it can be displayed.
+
+
+
+    // Busca contas
     web3.eth.getAccounts(function(err, accs) {
       if (err != null) {
-        alert("There was an error fetching your accounts.");
+        alert("Ocorreu um erro ao buscar suas contas.");
         return;
       }
 
       if (accs.length == 0) {
-        alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.");
+        alert("Nenhuma cnta encontrada! Garanta que o Ethereum client está confiogurado corretamente.");
         return;
       }
 
       accounts = accs;
       account = accounts[0];
-
-      self.refreshBalance();
     });
   },
 
@@ -48,44 +63,45 @@ window.App = {
     status.innerHTML = message;
   },
 
-  refreshBalance: function() {
+  createContract: function() {
     var self = this;
 
-    var meta;
-    MetaCoin.deployed().then(function(instance) {
-      meta = instance;
-      return meta.getBalance.call(account, {from: account});
-    }).then(function(value) {
-      var balance_element = document.getElementById("balance");
-      balance_element.innerHTML = value.valueOf();
-    }).catch(function(e) {
-      console.log(e);
-      self.setStatus("Error getting balance; see log.");
-    });
-  },
+    var nfeKey = parseInt(document.getElementById("nfeKey").value);
 
-  sendCoin: function() {
-    var self = this;
+    self.setStatus("Criando contrato... (aguarde)");
+    
+    DPClaim.new(nfeKey, deployedOracle.address, {from: account, gas: 3000000}).then(function(instance) {
+      self.setStatus(`Contrato criado com sucesso no endereço ${instance.address}`);
+      
+      // instance.ClaimNFEKeyRequired().watch ( (err, response) => {  //set up listener for the AuctionClosed Event
+      //   console.log(err);
+      //   //once the event has been detected, take actions as desired
+      //   console.log('Evento foi executado ' + JSON.stringify(response));
+      // });
 
-    var amount = parseInt(document.getElementById("amount").value);
-    var receiver = document.getElementById("receiver").value;
+      // Evento foi executato 
+      // {
+      //   "logIndex":0,"transactionIndex":0,
+      //   "transactionHash":"0x15dfdd5d465f58dcf2c9bffa60a5f4c8687fe3351c06b1a0de7b7e60390bb9b5",
+      //   "blockHash":"0x2d71c325ff9cb54d0e890d2d3565183b6991f69ad97005acc7fcb7bb5fd4a192",
+      //   "blockNumber":71,
+      //   "address":"0x448fb25100fe293050ce8dbe5e31af7f365ccad8",
+      //   "type":"mined",
+      //   "event":"ClaimNFEKeyRequired",
+      //   "args": {"_nfeKey":"0x0000000000000000000000000000000000000000000000000000000000000000"}
+      // }
 
-    this.setStatus("Initiating transaction... (please wait)");
-
-    var meta;
-    MetaCoin.deployed().then(function(instance) {
-      meta = instance;
-      return meta.sendCoin(receiver, amount, {from: account});
-    }).then(function() {
-      self.setStatus("Transaction complete!");
-      self.refreshBalance();
-    }).catch(function(e) {
-      console.log(e);
-      self.setStatus("Error sending coin; see log.");
+      console.log(instance.address);  
+    }).catch(function(err) {
+      console.log(err);
+      alert('Algo deu errado ao criar o contrato. Veja o console.')
     });
   }
+
+
 };
 
+// Padrao do Truffle
 window.addEventListener('load', function() {
   // Checking if Web3 has been injected by the browser (Mist/MetaMask)
   if (typeof web3 !== 'undefined') {
