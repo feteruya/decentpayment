@@ -12,6 +12,9 @@ import oracle_artifacts from '../../build/contracts/OracleI.json';
 var DPClaim = contract(dpclaim_artifacts);
 var OracleI = contract(oracle_artifacts);
 
+// FIX SOL: inicializa web3 para encontrar as contas
+var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
 // Código para interagir com o contrato
 var accounts;
 var account;
