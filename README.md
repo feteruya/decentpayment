@@ -21,6 +21,7 @@ Para executar o projeto ser necessário tres abas no terminal, como segue:
 2. Executar o servidor com o comando `npm run dev`
 3. Compilar os contratos: `truffle compile`
 3. Deploy dos contratos: `truffle migrate`
+4. Abrir pagina no navegador: `http://localhost:8080/`
 
 ### Aba3 (Executar o Oracle)
 1. Entrar no diretorio do projeto: `cd decentpayment`
